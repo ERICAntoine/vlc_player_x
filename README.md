@@ -7,8 +7,6 @@ A powerful and customizable video player for Flutter, built for VLC.
 
 ## Preview
 
-_Add screenshots or a demo video here._
-
 ![Screenshot](assets/controls.png)
 ---
 
