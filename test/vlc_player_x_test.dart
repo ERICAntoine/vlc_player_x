@@ -1,7 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:vlc_player_x/src/vlc_player_x.dart';
-
 void main() {
   test('adds one to input values', () {
     // final calculator = Calculator();
