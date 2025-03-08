@@ -1,11 +1,13 @@
 name: vlc_player_x
-description: "A new Flutter package project."
-version: 0.0.1
-homepage:
+description: "A powerful and customizable video player for Flutter, built for VLC"
+version: 1.0.0
+homepage: https://github.com/ERICAntoine/vlc_player_x
+repository: https://github.com/ERICAntoine/vlc_player_x
+issue_tracker: https://github.com/ERICAntoine/vlc_player_x/issues
 
 environment:
-  sdk: ^3.6.1
-  flutter: ">=1.17.0"
+  sdk: '>=3.5.0 <4.0.0'
+  flutter: ">=3.29.0"
 
 dependencies:
   equatable: ^2.0.7
@@ -26,8 +28,8 @@ dev_dependencies:
 flutter:
 
   # To add assets to your package, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
+  assets:
+      - assets/
   #   - images/a_dot_ham.jpeg
   #
   # For details regarding assets in packages, see
