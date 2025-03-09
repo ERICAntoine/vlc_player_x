@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
+import 'package:volume_controller/volume_controller.dart';
 
 sealed class VlcPlayerXState extends Equatable {
   const VlcPlayerXState();
@@ -23,6 +24,8 @@ class VlcPlayerXLoaded extends VlcPlayerXState {
   final double progress;
   final double volume;
   final bool isPlaying;
+  final VolumeController? volumeController;
+  final bool isUserAdjustingVolume;
 
   const VlcPlayerXLoaded({
     required this.controller,
@@ -31,6 +34,8 @@ class VlcPlayerXLoaded extends VlcPlayerXState {
     required this.progress,
     this.volume = 1.0,
     this.isPlaying = false,
+    this.volumeController,
+    this.isUserAdjustingVolume = false
   });
 
   VlcPlayerXLoaded copyWith({
@@ -40,6 +45,8 @@ class VlcPlayerXLoaded extends VlcPlayerXState {
     double? progress,
     double? volume,
     bool? isPlaying,
+    VolumeController? volumeController,
+    bool? isUserAdjustingVolume
   }) {
     return VlcPlayerXLoaded(
       controller: controller ?? this.controller,
@@ -48,6 +55,8 @@ class VlcPlayerXLoaded extends VlcPlayerXState {
       progress: progress ?? this.progress,
       volume: volume ?? this.volume,
       isPlaying: isPlaying ?? this.isPlaying,
+      volumeController: volumeController ?? this.volumeController,
+      isUserAdjustingVolume: isUserAdjustingVolume ?? this.isUserAdjustingVolume,
     );
   }
 
@@ -59,6 +68,8 @@ class VlcPlayerXLoaded extends VlcPlayerXState {
     progress,
     volume,
     isPlaying,
+    volumeController,
+    isUserAdjustingVolume
   ];
 }
 
