@@ -185,10 +185,14 @@ class _PlayerControlsState extends State<PlayerControls> {
                         backgroundColor: Colors.grey.shade700,
                         progress: volume,
                         volume: volume,
+                        onChangeStart: () {
+                          context.read<VlcPlayerXBloc>().add(VlcPlayerXVolumeChangeStarted());
+                        },
                         onChanged: (newVolume) {
-                          context
-                              .read<VlcPlayerXBloc>()
-                              .add(VlcPlayerXVolumeChanged(newVolume));
+                          context.read<VlcPlayerXBloc>().add(VlcPlayerXVolumeChanged(volume: newVolume));
+                        },
+                        onChangeEnd: () {
+                          context.read<VlcPlayerXBloc>().add(VlcPlayerXVolumeChangeEnded());
                         },
                       ),
                     );
@@ -260,3 +264,5 @@ class _PlayerControlsState extends State<PlayerControls> {
     );
   }
 }
+
+

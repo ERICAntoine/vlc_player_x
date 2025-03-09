@@ -26,8 +26,14 @@ class Volume extends StatefulWidget {
   /// Custom border radius for the volume bar.
   final BorderRadius? borderRadius;
 
-  /// Callback function when the user interacts with the volume bar.
+  /// Callback function when the user starts interacting with the volume bar.
+  final VoidCallback? onChangeStart;
+
+  /// Callback function during the interaction with the volume bar.
   final ValueChanged<double>? onChanged;
+
+  /// Callback function when the user ends the interaction with the volume bar.
+  final VoidCallback? onChangeEnd;
 
   /// Current volume level (between 0 and 1) used to determine the volume icon.
   final double volume;
@@ -42,6 +48,8 @@ class Volume extends StatefulWidget {
     this.borderRadius,
     this.onChanged,
     this.volume = 1.0,
+    this.onChangeStart,
+    this.onChangeEnd,
   });
 
   @override
@@ -63,9 +71,30 @@ class _VolumeState extends State<Volume> {
     }
   }
 
+  /// Handles the start of a drag operation
+  void _handleDragStart(DragStartDetails details) {
+    if (widget.onChangeStart != null) {
+      widget.onChangeStart!();
+    }
+  }
+
   /// Handles drag update events for adjusting the volume.
-  void _handleDragUpdate(DragUpdateDetails details, BoxConstraints constraints) {
-    _updateProgress(details.globalPosition, constraints);
+  void _handleDragUpdate(
+      DragUpdateDetails details, BoxConstraints constraints) {
+      _updateProgress(details.globalPosition, constraints);
+  }
+
+  /// Handles the end of a drag operation
+  void _handleDragEnd(DragEndDetails details) {
+    if (widget.onChangeEnd != null) {
+
+      /// Using addPostFrameCallback here ensures that the onChangeEnd callback
+      /// is executed after the rapid _handleDragUpdate events. This delay prevents
+      /// missing the end-of-drag event when updates occur too quickly.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+          widget.onChangeEnd!();
+      });
+    }
   }
 
   @override
@@ -78,14 +107,21 @@ class _VolumeState extends State<Volume> {
 
         final BorderRadius progressBorderRadius = widget.progress < 1.0
             ? BorderRadius.only(
-          topLeft: Radius.circular(thickness / 2),
-          bottomLeft: Radius.circular(thickness / 2),
-        )
+                topLeft: Radius.circular(thickness / 2),
+                bottomLeft: Radius.circular(thickness / 2),
+              )
             : widget.borderRadius ?? BorderRadius.circular(thickness / 2);
 
         return GestureDetector(
-          onHorizontalDragUpdate: (details) =>
-              _handleDragUpdate(details, constraints),
+          onHorizontalDragStart: (details) {
+            _handleDragStart(details);
+          },
+          onHorizontalDragUpdate: (details) {
+            _handleDragUpdate(details, constraints);
+          },
+          onHorizontalDragEnd: (details) {
+            _handleDragEnd(details);
+          },
           child: Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.end,
