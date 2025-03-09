@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vlc_player_x/src/bloc/vlcPlayerX/vlc_player_x_event.dart';
 import 'package:vlc_player_x/src/bloc/vlcPlayerX/vlc_player_x_state.dart';
+import 'package:volume_controller/volume_controller.dart';
 
 
 class VlcPlayerXBloc extends Bloc<VlcPlayerXEvent, VlcPlayerXState> {
@@ -10,7 +12,9 @@ class VlcPlayerXBloc extends Bloc<VlcPlayerXEvent, VlcPlayerXState> {
     on<VlcPlayerXInitialize>(_onInitialize);
     on<VlcPlayerXProgressChanged>(_onProgressChanged);
     on<VlcPlayerXSeekRequested>(_onSeekRequested);
+    on<VlcPlayerXVolumeChangeStarted>(_onVolumeChangeStarted);
     on<VlcPlayerXVolumeChanged>(_onVolumeChanged);
+    on<VlcPlayerXVolumeChangeEnded>(_onVolumeChangeEnded);
     on<VlcPlayerXPlayingStateChanged>(_onPlayingStateChanged);
   }
 
@@ -18,9 +22,20 @@ class VlcPlayerXBloc extends Bloc<VlcPlayerXEvent, VlcPlayerXState> {
       VlcPlayerXInitialize event, Emitter<VlcPlayerXState> emit) async {
     try {
       final controller = event.controller;
-      final initialVolumeInt = await controller.getVolume();
-      final initialVolume = initialVolumeInt! / 100.0;
+      final volumeInstance = VolumeController.instance;
+      final isMobile = Platform.isAndroid || Platform.isIOS;
+      final initialVolume = isMobile ? await VolumeController.instance.getVolume() : (await controller.getVolume())!.toDouble() / 100.0;
 
+      if(isMobile) {
+        VolumeController.instance.showSystemUI = false;
+
+        volumeInstance.addListener((double volume) {
+          if (state is VlcPlayerXLoaded && (state as VlcPlayerXLoaded).isUserAdjustingVolume) {
+            return;
+          }
+          add(VlcPlayerXVolumeChanged(volume: volume));
+        });
+      }
       controller.addListener(() {
         if (!isClosed) {
           add(VlcPlayerXPlayingStateChanged(controller.value.isPlaying));
@@ -46,10 +61,19 @@ class VlcPlayerXBloc extends Bloc<VlcPlayerXEvent, VlcPlayerXState> {
         progress: 0.0,
         volume: initialVolume,
         isPlaying: controller.value.isPlaying,
+        volumeController: volumeInstance
       ));
     } catch (error, stackTrace) {
       debugPrint("Error initializing VLC Player: $error\n$stackTrace");
       emit(VlcPlayerXError(error: "Failed to initialize VLC player: $error"));
+    }
+  }
+
+  Future<void> _onVolumeChangeStarted(
+      VlcPlayerXVolumeChangeStarted event, Emitter<VlcPlayerXState> emit) async {
+    final currentState = state;
+    if (currentState is VlcPlayerXLoaded) {
+      emit(currentState.copyWith(isUserAdjustingVolume: true));
     }
   }
 
@@ -59,23 +83,27 @@ class VlcPlayerXBloc extends Bloc<VlcPlayerXEvent, VlcPlayerXState> {
     if (currentState is VlcPlayerXLoaded) {
       try {
         final volumeValue = (event.volume * 100).round();
+        final isMobile = Platform.isAndroid || Platform.isIOS;
 
-        await currentState.controller.setVolume(volumeValue);
+        if (isMobile && currentState.volumeController != null) {
+          await currentState.volumeController!.setVolume(event.volume);
+        } else {
+          await currentState.controller.setVolume(volumeValue);
+        }
 
-        // emit(VlcPlayerXLoaded(
-        //   controller: currentState.controller,
-        //   position: currentState.position,
-        //   duration: currentState.duration,
-        //   progress: currentState.progress,
-        //   volume: event.volume,
-        //   isPlaying: currentState.isPlaying,
-        // ));
         emit(currentState.copyWith(volume: event.volume));
-
       } catch (error, stackTrace) {
         debugPrint("Error changing volume: $error\n$stackTrace");
         emit(VlcPlayerXError(error: "Failed to change volume: $error"));
       }
+    }
+  }
+
+  Future<void> _onVolumeChangeEnded(
+      VlcPlayerXVolumeChangeEnded event, Emitter<VlcPlayerXState> emit) async {
+    final currentState = state;
+    if (currentState is VlcPlayerXLoaded) {
+      emit(currentState.copyWith(isUserAdjustingVolume: false));
     }
   }
 
@@ -97,13 +125,6 @@ class VlcPlayerXBloc extends Bloc<VlcPlayerXEvent, VlcPlayerXState> {
 
         if (emit.isDone) return;
 
-        // emit(VlcPlayerXLoaded(
-        //   controller: currentState.controller,
-        //   position: position,
-        //   duration: duration,
-        //   progress: progress,
-        //   volume: currentState.volume,
-        // ));
         emit(currentState.copyWith(
           position: position,
           duration: duration,
@@ -121,15 +142,6 @@ class VlcPlayerXBloc extends Bloc<VlcPlayerXEvent, VlcPlayerXState> {
     final currentState = state;
     if (currentState is VlcPlayerXLoaded) {
       if (currentState.isPlaying == event.isPlaying) return;
-
-      // emit(VlcPlayerXLoaded(
-      //   controller: currentState.controller,
-      //   position: currentState.position,
-      //   duration: currentState.duration,
-      //   progress: currentState.progress,
-      //   volume: currentState.volume,
-      //   isPlaying: event.isPlaying,
-      // ));
 
       try {
         emit(currentState.copyWith(isPlaying: event.isPlaying));
