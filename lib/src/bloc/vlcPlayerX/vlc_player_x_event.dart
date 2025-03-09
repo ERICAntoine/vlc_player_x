@@ -15,16 +15,19 @@ class VlcPlayerXSeekRequested extends VlcPlayerXEvent {
   VlcPlayerXSeekRequested(this.progress);
 }
 
+class VlcPlayerXVolumeChangeStarted extends VlcPlayerXEvent {}
+
 class VlcPlayerXVolumeChanged extends VlcPlayerXEvent {
   final double volume;
 
-  VlcPlayerXVolumeChanged(this.volume);
+  VlcPlayerXVolumeChanged({required this.volume});
 }
+
+class VlcPlayerXVolumeChangeEnded extends VlcPlayerXEvent {}
 
 class VlcPlayerXPlayingStateChanged extends VlcPlayerXEvent {
   final bool isPlaying;
   VlcPlayerXPlayingStateChanged(this.isPlaying);
 }
-
 
 class VlcPlayerDispose extends VlcPlayerXEvent {}
