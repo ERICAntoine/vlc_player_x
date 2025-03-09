@@ -27,7 +27,7 @@ Add this dependency to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  vlc_player_x: ^1.0.0
+  vlc_player_x: ^1.1.0
 ```
 
 ---
