@@ -123,7 +123,6 @@ class VlcPlayerXBloc extends Bloc<VlcPlayerXEvent, VlcPlayerXState> {
             ? position.inMilliseconds / duration.inMilliseconds
             : 0.0;
 
-        debugPrint("Progress: $progress");
         if (emit.isDone) return;
 
         emit(currentState.copyWith(
