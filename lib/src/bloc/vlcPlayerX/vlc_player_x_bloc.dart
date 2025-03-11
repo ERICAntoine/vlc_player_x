@@ -123,6 +123,7 @@ class VlcPlayerXBloc extends Bloc<VlcPlayerXEvent, VlcPlayerXState> {
             ? position.inMilliseconds / duration.inMilliseconds
             : 0.0;
 
+        debugPrint("Progress: $progress");
         if (emit.isDone) return;
 
         emit(currentState.copyWith(
@@ -159,13 +160,20 @@ class VlcPlayerXBloc extends Bloc<VlcPlayerXEvent, VlcPlayerXState> {
       try {
         final duration = await currentState.controller.getDuration();
         final newPositionMillis = (duration.inMilliseconds * event.progress).toInt();
+        final newPosition = Duration(milliseconds: newPositionMillis);
+        final isPlaying = currentState.controller.value.isPlaying;
 
         if (currentState.controller.value.isEnded) {
           await currentState.controller.stop();
-          await currentState.controller.seekTo(Duration(milliseconds: newPositionMillis));
+          await currentState.controller.seekTo(newPosition);
           await currentState.controller.play();
+        } else if(!isPlaying){
+          await currentState.controller.play();
+          await currentState.controller.seekTo(newPosition);
+          await currentState.controller.pause();
         } else {
-          await currentState.controller.seekTo(Duration(milliseconds: newPositionMillis));
+          await currentState.controller.seekTo(newPosition);
+
         }
 
         add(VlcPlayerXProgressChanged());
@@ -176,3 +184,4 @@ class VlcPlayerXBloc extends Bloc<VlcPlayerXEvent, VlcPlayerXState> {
     }
   }
 }
+
