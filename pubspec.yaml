@@ -1,6 +1,6 @@
 name: vlc_player_x
 description: "A powerful and customizable video player for Flutter, built for VLC"
-version: 1.1.0
+version: 1.1.1
 homepage: https://github.com/ERICAntoine/vlc_player_x
 repository: https://github.com/ERICAntoine/vlc_player_x
 issue_tracker: https://github.com/ERICAntoine/vlc_player_x/issues

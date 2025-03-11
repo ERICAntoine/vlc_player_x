@@ -14,3 +14,8 @@
 - **Resolved drag-end detection issue** using `addPostFrameCallback` to ensure proper execution of `onChangeEnd`.
 - **Optimized volume change logic** to prevent unnecessary state updates.
 - **Refactored volume event listeners** to reduce redundant calls and improve UI responsiveness.
+
+## [1.1.1] - 2025-03-12
+
+### 🛠 Fixes & Improvements
+- **Fixed _onSeekRequested** function when player is in pause.
